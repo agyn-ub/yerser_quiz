@@ -49,7 +49,7 @@ export async function GET(request: Request) {
         userScoresList = await db.query.userScores.findMany({
           where: eq(userScores.userId, user.id),
           orderBy: [desc(userScores.completedAt)],
-          limit: 5
+          limit: 25
         })
       }
     }
