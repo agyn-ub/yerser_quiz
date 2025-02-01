@@ -1,9 +1,11 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { motion } from 'framer-motion'
 import { Loading } from '@/components/ui/loading'
 import Link from 'next/link'
+import { LeadersList } from '@/components/leaders/leaders-list'
+import { LeadersSkeleton } from '@/components/leaders/leaders-skeleton'
 
 interface Score {
   id: number
@@ -48,20 +50,9 @@ export default function LeadersPage() {
 
         <div className="bg-white rounded-2xl shadow-lg p-6">
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Таблица лидеров</h2>
-          <div className="space-y-3">
-            {topScores.map((score, index) => (
-              <div key={score.id} className="bg-gray-50 p-4 rounded-xl flex items-center">
-                <span className="text-2xl font-bold text-blue-600 mr-4">#{index + 1}</span>
-                <div>
-                  <p className="font-medium">
-                    {score.user.firstName} {score.user.lastName}
-                    {score.user.username && <span className="text-gray-500"> @{score.user.username}</span>}
-                  </p>
-                  <p className="text-blue-600">{score.score} правильных ответов</p>
-                </div>
-              </div>
-            ))}
-          </div>
+          <Suspense fallback={<LeadersSkeleton />}>
+            <LeadersList />
+          </Suspense>
         </div>
       </div>
     </div>

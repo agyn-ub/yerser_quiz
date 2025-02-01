@@ -1,15 +1,85 @@
+'use client'
+
+import { motion } from 'framer-motion'
+
 export function Loading() {
+	const circleVariants = {
+		start: {
+			scale: 0.8,
+			opacity: 0.5,
+		},
+		end: {
+			scale: 1,
+			opacity: 1,
+		},
+	}
+
+	const containerVariants = {
+		start: {
+			rotate: 0,
+		},
+		end: {
+			rotate: 360,
+		},
+	}
+
 	return (
-		<div className="relative">
-			<div className="w-20 h-20">
-				<div className="absolute top-0 left-0 w-full h-full border-8 border-blue-200 rounded-full animate-pulse" />
-				<div className="absolute top-0 left-0 w-full h-full border-8 border-blue-600 rounded-full animate-spin border-t-transparent" />
-			</div>
-			<div className="absolute inset-0 flex items-center justify-center">
-				<svg className="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
-					<path d="M19.7,8.3L19.7,8.3c-0.4-0.4-1-0.4-1.4,0l-6.9,6.9l-4.7-4.7c-0.4-0.4-1-0.4-1.4,0l0,0c-0.4,0.4-0.4,1,0,1.4l5.4,5.4 c0.4,0.4,1,0.4,1.4,0l7.6-7.6C20.1,9.3,20.1,8.7,19.7,8.3z" />
-				</svg>
-			</div>
+		<div className="flex flex-col items-center justify-center gap-8">
+			<motion.div
+				className="relative w-20 h-20"
+				variants={containerVariants}
+				initial="start"
+				animate="end"
+				transition={{
+					duration: 2,
+					repeat: Infinity,
+					ease: "linear"
+				}}
+			>
+				{[...Array(3)].map((_, i) => (
+					<motion.div
+						key={i}
+						className="absolute w-6 h-6 rounded-full bg-gradient-to-r from-blue-500 to-blue-600"
+						variants={circleVariants}
+						style={{
+							top: `${Math.sin((i * 2 * Math.PI) / 3) * 30 + 50}%`,
+							left: `${Math.cos((i * 2 * Math.PI) / 3) * 30 + 50}%`,
+						}}
+						animate={{
+							scale: [1, 1.2, 1],
+							opacity: [0.5, 1, 0.5],
+						}}
+						transition={{
+							duration: 1.5,
+							repeat: Infinity,
+							delay: i * 0.2,
+							ease: "easeInOut",
+						}}
+					/>
+				))}
+			</motion.div>
+			<motion.div
+				initial={{ opacity: 0, y: 10 }}
+				animate={{ opacity: 1, y: 0 }}
+				transition={{ delay: 0.5 }}
+				className="relative"
+			>
+				<span className="bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent font-medium">
+					Загрузка
+				</span>
+				<motion.span
+					initial={{ opacity: 0 }}
+					animate={{ opacity: [0, 1, 0] }}
+					transition={{
+						duration: 1.5,
+						repeat: Infinity,
+						ease: "easeInOut",
+					}}
+					className="absolute -right-4 bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent"
+				>
+					...
+				</motion.span>
+			</motion.div>
 		</div>
 	)
 } 

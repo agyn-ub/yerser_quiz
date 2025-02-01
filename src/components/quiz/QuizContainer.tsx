@@ -18,20 +18,25 @@ export function QuizContainer({ questions }: { questions: Question[] }) {
 	const [score, setScore] = useState(0)
 	const [showResult, setShowResult] = useState(false)
 	const [saveError, setSaveError] = useState<string | null>(null)
+	const [isSubmitting, setIsSubmitting] = useState(false)
 
 	const handleAnswer = async (answer: string) => {
+		if (isSubmitting) return // Prevent multiple submissions
+
 		const isCorrect = answer === questions[currentQuestion].correctAnswer
 		if (isCorrect) setScore(score + 1)
 
 		if (currentQuestion + 1 < questions.length) {
 			setCurrentQuestion(currentQuestion + 1)
 		} else {
+			setIsSubmitting(true) // Disable buttons while saving
 			const finalScore = score + (isCorrect ? 1 : 0)
 			const saved = await saveScore(finalScore)
 			setShowResult(true)
 			if (!saved) {
 				setSaveError('Не удалось сохранить результат. Попробуйте еще раз.')
 			}
+			setIsSubmitting(false)
 		}
 	}
 
@@ -94,7 +99,12 @@ export function QuizContainer({ questions }: { questions: Question[] }) {
 					<button
 						key={index}
 						onClick={() => handleAnswer(option)}
-						className="quiz-option"
+						disabled={isSubmitting}
+						className={`w-full p-4 text-left text-[17px] font-medium bg-white border border-gray-200/80 rounded-xl mb-2 transition-colors ${
+							isSubmitting 
+								? 'opacity-50 cursor-not-allowed' 
+								: 'active:bg-gray-50 hover:border-blue-200'
+						}`}
 					>
 						{option}
 					</button>
