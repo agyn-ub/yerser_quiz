@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { sql } from 'drizzle-orm'
-import { quizQuestions } from '@/lib/db/schema'
 
 export async function GET() {
   try {

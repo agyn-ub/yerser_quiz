@@ -5,6 +5,25 @@ import { desc, eq } from 'drizzle-orm'
 
 export const dynamic = 'force-dynamic'
 
+// Define interfaces for type safety
+interface User {
+  id: number
+  telegramId: string
+  firstName: string | null
+  lastName: string | null
+  username: string | null
+  createdAt: Date | null
+}
+
+interface UserScore {
+  id: number
+  userId: number | null
+  score: number
+  correctAnswers: number
+  completedAt: Date | null
+  user?: User
+}
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
@@ -20,7 +39,7 @@ export async function GET(request: Request) {
     })
 
     // Get user's scores if telegramId is provided
-    let userScoresList: any[] = []
+    let userScoresList: UserScore[] = []
     if (telegramId) {
       const user = await db.query.users.findFirst({
         where: eq(users.telegramId, telegramId),

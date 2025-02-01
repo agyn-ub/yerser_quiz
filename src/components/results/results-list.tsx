@@ -33,7 +33,15 @@ export function ResultsList() {
           throw new Error(data.error || 'Failed to fetch results')
         }
 
-        setScores(data.userScores)
+        // Sort scores by score (highest first) and then by date (newest first)
+        const sortedScores = data.userScores.sort((a: Score, b: Score) => {
+          if (b.score !== a.score) {
+            return b.score - a.score // Sort by score first
+          }
+          return new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime() // Then by date
+        })
+        
+        setScores(sortedScores)
       } catch (error) {
         console.error('Error fetching results:', error)
         setError('Произошла ошибка при загрузке результатов')
