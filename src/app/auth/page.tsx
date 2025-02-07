@@ -24,9 +24,9 @@ export default function Auth() {
         })
 
         if (checkResponse.ok) {
-          const { authenticated, user: authUser } = await checkResponse.json()
+          const { authenticated } = await checkResponse.json()
           if (authenticated) {
-            router.replace(authUser.selectedClubId ? '/' : '/select-club')
+            router.replace('/')
             return
           }
         }

@@ -8,8 +8,9 @@ export async function POST(request: Request) {
 	try {
 		const userData = await request.json()
 		const cookieStore = cookies()
+		let user
 
-		// Check if user exists
+		// Check if user exists first
 		const existingUser = await db.query.users.findFirst({
 			where: eq(users.telegramId, userData.telegramId),
 			with: {
@@ -17,36 +18,39 @@ export async function POST(request: Request) {
 			},
 		})
 
-		let user = existingUser
-
 		if (!existingUser) {
 			// Create new user
-			const [newUser] = await db.insert(users)
-				.values({
-					telegramId: userData.telegramId,
-					firstName: userData.firstName,
-					lastName: userData.lastName,
-					username: userData.username,
-				})
-				.returning()
+			await db.insert(users).values({
+				telegramId: userData.telegramId,
+				firstName: userData.firstName,
+				lastName: userData.lastName,
+				username: userData.username,
+			})
 
-			user = newUser
+			// Fetch the newly created user with relations
+			user = await db.query.users.findFirst({
+				where: eq(users.telegramId, userData.telegramId),
+				with: {
+					selectedClub: true,
+				},
+			})
+		} else {
+			user = existingUser
 		}
-
-		// Set telegram_id cookie with proper options
-		cookieStore.set('telegram_id', userData.telegramId, {
-			httpOnly: true,
-			secure: process.env.NODE_ENV === 'production',
-			sameSite: 'lax',
-			path: '/',
-			// Set a reasonable expiration (e.g., 30 days)
-			maxAge: 30 * 24 * 60 * 60
-		})
 
 		const response = NextResponse.json({
 			success: true,
 			user,
-			redirect: user.selectedClubId ? '/' : '/select-club'
+			redirect: user?.selectedClubId ? '/' : '/select-club'
+		})
+
+		// Set cookie on the response object instead
+		response.cookies.set('telegram_id', userData.telegramId, {
+			httpOnly: true,
+			secure: process.env.NODE_ENV === 'production',
+			sameSite: 'lax',
+			path: '/',
+			maxAge: 30 * 24 * 60 * 60
 		})
 
 		return response

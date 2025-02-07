@@ -8,6 +8,7 @@ export async function POST(request: Request) {
   try {
     const { score } = await request.json()
     const cookieStore = await cookies()
+    const telegramId = cookieStore.get('telegram_id')?.value
 
     if (!telegramId) {
       return NextResponse.json(
@@ -18,19 +19,20 @@ export async function POST(request: Request) {
 
     // Get user by telegram ID
     const user = await db.query.users.findFirst({
-      where: eq(users.telegramId, telegramId)
+      where: eq(users.telegramId, telegramId),
     })
 
-    if (!user) {
+    if (!user || !user.selectedClubId) {
       return NextResponse.json(
-        { error: 'User not found' },
+        { error: 'User or selected club not found' },
         { status: 404 }
       )
     }
 
-    // Save score
+    // Save score with club info
     await db.insert(userScores).values({
       userId: user.id,
+      clubId: user.selectedClubId,
       score: score,
       correctAnswers: score,
       completedAt: new Date(),
