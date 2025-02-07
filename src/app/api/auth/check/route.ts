@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
 import { db } from '@/lib/db'
 import { users } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
-import { cookies } from 'next/headers'
 
 export async function GET() {
   try {
@@ -11,26 +11,31 @@ export async function GET() {
 
     if (!telegramId) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { authenticated: false, error: 'No auth cookie' }, 
         { status: 401 }
       )
     }
 
+    // Verify the user exists in the database
     const user = await db.query.users.findFirst({
       where: eq(users.telegramId, telegramId),
-      with: {
-        selectedClub: true,
-      },
     })
 
-    return NextResponse.json({
-      selectedClubId: user?.selectedClubId,
-      club: user?.selectedClub,
+    if (!user) {
+      return NextResponse.json(
+        { authenticated: false, error: 'User not found' }, 
+        { status: 401 }
+      )
+    }
+
+    return NextResponse.json({ 
+      authenticated: true,
+      user 
     })
   } catch (error) {
-    console.error('Error fetching user club:', error)
+    console.error('Auth check error:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch user club' },
+      { authenticated: false, error: 'Auth check failed' },
       { status: 500 }
     )
   }

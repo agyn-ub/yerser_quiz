@@ -15,7 +15,8 @@ export default function Home() {
 	useEffect(() => {
 		const checkAuth = async () => {
 			if (!user) {
-				router.push('/auth')
+				setIsLoading(false)
+				router.replace('/auth')
 				return
 			}
 
@@ -23,8 +24,13 @@ export default function Home() {
 				const response = await fetch('/api/user/club')
 				const data = await response.json()
 				
+				if (response.status === 401) {
+					router.replace('/auth')
+					return
+				}
+
 				if (!data.selectedClubId) {
-					router.push('/select-club')
+					router.replace('/select-club')
 					return
 				}
 				
@@ -39,7 +45,11 @@ export default function Home() {
 		checkAuth()
 	}, [user, router])
 
-	if (isLoading || !user || !hasSelectedClub) {
+	if (isLoading) {
+		return <div>Loading...</div>
+	}
+
+	if (!hasSelectedClub) {
 		return null
 	}
 
@@ -74,15 +84,15 @@ export default function Home() {
 								<div className="space-y-3">
 									<p className="text-gray-700">
 										<span className="font-medium">Имя:</span>{' '}
-										{user.first_name}
+										{user?.first_name}
 									</p>
-									{user.last_name && (
+									{user?.last_name && (
 										<p className="text-gray-700">
 											<span className="font-medium">Фамилия:</span>{' '}
 											{user.last_name}
 										</p>
 									)}
-									{user.username && (
+									{user?.username && (
 										<p className="text-gray-700">
 											<span className="font-medium">Username:</span>{' '}
 											@{user.username}

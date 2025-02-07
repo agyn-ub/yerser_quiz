@@ -8,7 +8,6 @@ export async function POST(request: Request) {
   try {
     const { score } = await request.json()
     const cookieStore = await cookies()
-    const telegramId = cookieStore.get('telegram_id')?.value
 
     if (!telegramId) {
       return NextResponse.json(
