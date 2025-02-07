@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { userScores, users } from '@/lib/db/schema'
-import { desc, eq } from 'drizzle-orm'
+import { eq, desc } from 'drizzle-orm'
+import { userScores } from '@/lib/db/schema'
 
 export const dynamic = 'force-dynamic'
 
@@ -27,36 +27,56 @@ interface UserScore {
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
+    const clubId = searchParams.get('clubId')
     const telegramId = searchParams.get('telegramId')
 
-    // Get top 20 scores
-    const topScores = await db.query.userScores.findMany({
-      limit: 20,
-      orderBy: [desc(userScores.score), desc(userScores.completedAt)],
+    let query = db.query.userScores.findMany({
       with: {
-        user: true
-      }
+        user: true,
+        club: true,
+      },
+      orderBy: [desc(userScores.score), desc(userScores.completedAt)],
+      limit: 100,
     })
 
-    // Get user's scores if telegramId is provided
-    let userScoresList: UserScore[] = []
-    if (telegramId) {
-      const user = await db.query.users.findFirst({
-        where: eq(users.telegramId, telegramId),
+    if (clubId) {
+      query = db.query.userScores.findMany({
+        where: eq(userScores.clubId, parseInt(clubId)),
+        with: {
+          user: true,
+          club: true,
+        },
+        orderBy: [desc(userScores.score), desc(userScores.completedAt)],
+        limit: 100,
       })
-
-      if (user) {
-        userScoresList = await db.query.userScores.findMany({
-          where: eq(userScores.userId, user.id),
-          orderBy: [desc(userScores.completedAt)],
-          limit: 25
-        })
-      }
     }
 
-    return NextResponse.json({ 
-      topScores,
-      userScores: userScoresList
+    if (telegramId) {
+      query = db.query.userScores.findMany({
+        where: eq(userScores.userId, parseInt(telegramId)),
+        with: {
+          user: true,
+          club: true,
+        },
+        orderBy: [desc(userScores.score), desc(userScores.completedAt)],
+        limit: 100,
+      })
+    }
+
+    const scores = await query
+
+    return NextResponse.json({
+      topScores: scores.map(score => ({
+        id: score.id,
+        score: score.score,
+        completedAt: score.completedAt,
+        club: score.club,
+        user: score.user ? {
+          firstName: score.user.firstName,
+          lastName: score.user.lastName,
+          username: score.user.username,
+        } : null,
+      })),
     })
   } catch (error) {
     console.error('Error fetching results:', error)
