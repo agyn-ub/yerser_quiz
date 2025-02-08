@@ -1,12 +1,29 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { LeadersList } from '@/components/leaders/leaders-list'
 import { PageTransition } from '@/components/ui/page-transition'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
+import { UserResults } from '@/components/results/user-results'
+import { LoadingState } from '@/components/ui/loading-state'
+import { useEffect, useState } from 'react'
 
-export default function LeadersPage() {
+export default function MyResultsPage() {
   const router = useRouter()
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const telegramId = localStorage.getItem('telegram_id')
+      if (!telegramId) {
+        router.replace('/auth')
+        return
+      }
+      await new Promise(resolve => setTimeout(resolve, 800))
+      setIsLoading(false)
+    }
+
+    checkAuth()
+  }, [router])
 
   return (
     <PageTransition>
@@ -25,7 +42,7 @@ export default function LeadersPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2, duration: 0.3 }}
               >
-                Таблица лидеров
+                Мои результаты
               </motion.h1>
               <motion.button
                 onClick={() => router.push('/')}
@@ -42,7 +59,13 @@ export default function LeadersPage() {
                 <span>Назад</span>
               </motion.button>
             </div>
-            <LeadersList />
+            <AnimatePresence mode="wait">
+              {isLoading ? (
+                <LoadingState text="Загрузка результатов..." />
+              ) : (
+                <UserResults />
+              )}
+            </AnimatePresence>
           </motion.div>
         </div>
       </div>
