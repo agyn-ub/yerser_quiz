@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
-import { useTelegram } from '@/hooks/useTelegram'
 import { useRouter } from 'next/navigation'
 
 interface Club {
@@ -26,11 +25,16 @@ const clubs: Club[] = [
 export function ClubSelector() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
+  const [selectedClubId, setSelectedClubId] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const handleClubSelect = async (clubId: number) => {
+    if (isLoading || selectedClubId === clubId) return
+
     try {
       setIsLoading(true)
+      setSelectedClubId(clubId)
+      setError(null)
       const telegramId = localStorage.getItem('telegram_id')
       
       if (!telegramId) {
@@ -53,48 +57,109 @@ export function ClubSelector() {
 
       if (data.success) {
         localStorage.setItem('selected_club_id', clubId.toString())
-        // Reload the page instead of using window.location
-        router.refresh()
-        router.push('/')
+        // Add delay for better UX
+        await new Promise(resolve => setTimeout(resolve, 800))
+        router.replace('/')
       } else {
         throw new Error(data.error || 'Failed to select club')
       }
     } catch (error) {
       console.error('Error selecting club:', error)
       setError('Failed to select club. Please try again.')
+      setSelectedClubId(null)
     } finally {
       setIsLoading(false)
     }
   }
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-      {clubs.map((club) => (
-        <motion.button
-          key={club.id}
-          onClick={() => handleClubSelect(club.id)}
-          disabled={isLoading}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="relative p-4 bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-200 flex flex-col items-center space-y-2 disabled:opacity-50"
-        >
-          <div className="relative w-16 h-16 sm:w-20 sm:h-20">
-            <Image
-              src={club.icon}
-              alt={club.name}
-              fill
-              className="object-contain"
-              sizes="(max-width: 640px) 4rem, 5rem"
-            />
-          </div>
-          <span className="text-sm font-medium text-gray-800">{club.name}</span>
-        </motion.button>
-      ))}
+    <motion.div 
+      className="grid grid-cols-2 sm:grid-cols-3 gap-4"
+      initial="hidden"
+      animate="visible"
+      variants={{
+        hidden: { opacity: 0 },
+        visible: {
+          opacity: 1,
+          transition: {
+            staggerChildren: 0.1
+          }
+        }
+      }}
+    >
+      {clubs.map((club) => {
+        const isSelected = selectedClubId === club.id
+        const isDisabled = isLoading || (isSelected && isLoading)
+
+        return (
+          <motion.button
+            key={club.id}
+            onClick={() => handleClubSelect(club.id)}
+            disabled={isDisabled}
+            variants={{
+              hidden: { opacity: 0, y: 20 },
+              visible: { opacity: 1, y: 0 }
+            }}
+            whileHover={!isDisabled ? { 
+              scale: 1.05,
+              boxShadow: '0 8px 20px rgba(0,0,0,0.1)'
+            } : {}}
+            whileTap={!isDisabled ? { scale: 0.95 } : {}}
+            className={`relative p-4 bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-200 flex flex-col items-center space-y-2
+              ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
+              ${isSelected ? 'ring-2 ring-blue-500 ring-offset-2' : ''}
+              ${isSelected && isLoading ? 'pointer-events-none' : ''}
+            `}
+          >
+            <motion.div 
+              className="relative w-16 h-16 sm:w-20 sm:h-20"
+              whileHover={!isDisabled ? { rotate: [0, -10, 10, -10, 0] } : {}}
+              transition={{ duration: 0.5 }}
+            >
+              <Image
+                src={club.icon}
+                alt={club.name}
+                fill
+                className={`object-contain transition-opacity duration-200 
+                  ${isDisabled ? 'opacity-50' : 'opacity-100'}
+                `}
+                sizes="(max-width: 640px) 4rem, 5rem"
+              />
+              {isSelected && isLoading && (
+                <motion.div 
+                  className="absolute inset-0 flex items-center justify-center"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                </motion.div>
+              )}
+            </motion.div>
+            <span className={`text-sm font-medium ${isSelected ? 'text-blue-600' : 'text-gray-800'}`}>
+              {club.name}
+            </span>
+            {isSelected && (
+              <motion.div
+                className="absolute inset-0 bg-blue-50/20 rounded-xl"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.2 }}
+              />
+            )}
+          </motion.button>
+        )
+      })}
       {error && (
-        <p className="col-span-full text-center text-red-500 mt-4">{error}</p>
+        <motion.p 
+          className="col-span-full text-center text-red-500 mt-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          {error}
+        </motion.p>
       )}
-    </div>
+    </motion.div>
   )
 } 

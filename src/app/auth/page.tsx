@@ -18,7 +18,6 @@ export default function Auth() {
       setAuthError(null)
 
       try {
-        // If not in localStorage, check database and create if needed
         const response = await fetch('/api/auth/telegram', {
           method: 'POST',
           headers: {
@@ -36,22 +35,29 @@ export default function Auth() {
           throw new Error('Authentication failed')
         }
 
-        // Store telegram ID in localStorage
-        localStorage.setItem('telegram_id', user.id.toString())
+        const data = await response.json()
 
-        // Redirect to main page
-        router.replace('/')
-
+        if (data.success) {
+          localStorage.setItem('telegram_id', user.id.toString())
+          
+          if (data.user?.selectedClubId) {
+            localStorage.setItem('selected_club_id', data.user.selectedClubId.toString())
+            router.replace('/')
+          } else {
+            router.replace('/select-club')
+          }
+        } else {
+          throw new Error(data.error || 'Authentication failed')
+        }
       } catch (error) {
         console.error('Authentication error:', error)
         setAuthError('Failed to authenticate. Please try again.')
-      } finally {
         setIsAuthenticating(false)
       }
     }
 
     authenticate()
-  }, [user, router, isAuthenticating])
+  }, [user, router])
 
   if (isAuthenticating) {
     return (

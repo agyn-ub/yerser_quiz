@@ -9,17 +9,16 @@ export default function Home() {
 	const [isLoading, setIsLoading] = useState(true)
 
 	useEffect(() => {
-		const checkAuthAndClub = async () => {
-			const storedTelegramId = localStorage.getItem('telegram_id')
-			if (!storedTelegramId) {
-				setIsLoading(false)
+		const checkAuth = () => {
+			const telegramId = localStorage.getItem('telegram_id')
+			const selectedClubId = localStorage.getItem('selected_club_id')
+
+			if (!telegramId) {
 				router.replace('/auth')
 				return
 			}
 
-			const selectedClubId = localStorage.getItem('selected_club_id')
 			if (!selectedClubId) {
-				setIsLoading(false)
 				router.replace('/select-club')
 				return
 			}
@@ -27,7 +26,7 @@ export default function Home() {
 			setIsLoading(false)
 		}
 
-		checkAuthAndClub()
+		checkAuth()
 	}, [router])
 
 	if (isLoading) {
