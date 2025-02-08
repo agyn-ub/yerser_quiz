@@ -10,6 +10,11 @@ interface Score {
   id: number
   score: number
   completedAt: string
+  club: {
+    id: number
+    name: string
+    icon: string
+  }
   user: {
     firstName: string
     lastName: string | null
@@ -25,7 +30,11 @@ export function ResultsList() {
   useEffect(() => {
     const fetchScores = async () => {
       try {
-        const url = user ? `/api/quiz/results?telegramId=${user.id}` : '/api/quiz/results'
+        const clubId = localStorage.getItem('selected_club_id')
+        const url = user 
+          ? `/api/quiz/results?telegramId=${user.id}&clubId=${clubId}`
+          : `/api/quiz/results?clubId=${clubId}`
+        
         const response = await fetch(url, { cache: 'no-store' })
         const data = await response.json()
         
@@ -34,11 +43,11 @@ export function ResultsList() {
         }
 
         // Sort scores by score (highest first) and then by date (newest first)
-        const sortedScores = data.userScores.sort((a: Score, b: Score) => {
+        const sortedScores = data.topScores.sort((a: Score, b: Score) => {
           if (b.score !== a.score) {
-            return b.score - a.score // Sort by score first
+            return b.score - a.score
           }
-          return new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime() // Then by date
+          return new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime()
         })
         
         setScores(sortedScores)
@@ -68,9 +77,18 @@ export function ResultsList() {
           animate={{ opacity: 1, y: 0 }}
           className="bg-gray-50 p-4 rounded-xl"
         >
-          <p className="text-lg font-medium text-blue-600">
-            {score.score} правильных ответов
-          </p>
+          <div className="flex items-center gap-3">
+            {score.club && (
+              <img 
+                src={score.club.icon} 
+                alt={score.club.name} 
+                className="w-6 h-6 object-contain"
+              />
+            )}
+            <p className="text-lg font-medium text-blue-600">
+              {score.score} правильных ответов
+            </p>
+          </div>
           <p className="text-sm text-gray-600">
             {format(new Date(score.completedAt), "d MMMM yyyy 'в' HH:mm", { locale: ru })}
           </p>

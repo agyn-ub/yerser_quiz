@@ -37,9 +37,9 @@ export function AuthenticatedContent() {
 	return (
 		<div className="bg-white rounded-2xl shadow-lg p-8">
 			<div className="flex items-center justify-between mb-8">
-				{selectedClub ? (
-					<div className="flex items-center gap-3">
-						<div className="relative w-10 h-10">
+				<div className="flex items-center gap-3">
+					{selectedClub && (
+						<div className="relative w-20 h-20">
 							<Image
 								src={selectedClub.icon}
 								alt={selectedClub.name}
@@ -47,15 +47,8 @@ export function AuthenticatedContent() {
 								className="object-contain"
 							/>
 						</div>
-						<h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
-							{selectedClub.name} Quiz
-						</h1>
-					</div>
-				) : (
-					<h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
-						Football Quiz
-					</h1>
-				)}
+					)}
+				</div>
 				<div className="bg-blue-50 rounded-full px-4 py-2">
 					<span className="text-blue-600 font-medium">
 						Beta

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { eq, desc } from 'drizzle-orm'
-import { userScores } from '@/lib/db/schema'
+import { userScores, users } from '@/lib/db/schema'
 
 export const dynamic = 'force-dynamic'
 
@@ -52,8 +52,18 @@ export async function GET(request: Request) {
     }
 
     if (telegramId) {
+      // First get the user by telegramId
+      const user = await db.query.users.findFirst({
+        where: eq(users.telegramId, telegramId)
+      })
+
+      if (!user) {
+        return NextResponse.json({ topScores: [] })
+      }
+
+      // Then get scores using the user's ID
       query = db.query.userScores.findMany({
-        where: eq(userScores.userId, parseInt(telegramId)),
+        where: eq(userScores.userId, user.id),
         with: {
           user: true,
           club: true,

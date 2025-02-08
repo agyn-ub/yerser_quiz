@@ -27,31 +27,9 @@ interface Score {
 export function LeadersList() {
   const { user } = useTelegram()
   const [scores, setScores] = useState<Score[]>([])
-  const [userScores, setUserScores] = useState<Score[]>([])
   const [selectedClub, setSelectedClub] = useState<number | null>(null)
-  const [userSelectedClub, setUserSelectedClub] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-
-  // Fetch user's selected club
-  useEffect(() => {
-    const fetchUserClub = async () => {
-      try {
-        const response = await fetch('/api/user/club')
-        const data = await response.json()
-        if (data.selectedClubId) {
-          setUserSelectedClub(data.selectedClubId)
-          setSelectedClub(data.selectedClubId) // Set initial filter to user's club
-        }
-      } catch (error) {
-        console.error('Error fetching user club:', error)
-      }
-    }
-
-    if (user) {
-      fetchUserClub()
-    }
-  }, [user])
 
   // Fetch scores based on selected club
   useEffect(() => {
@@ -59,34 +37,18 @@ export function LeadersList() {
       try {
         setIsLoading(true)
         
-        // Fetch global scores for selected club
         const globalUrl = selectedClub 
           ? `/api/quiz/results?clubId=${selectedClub}`
           : '/api/quiz/results'
         
-        const globalResponse = await fetch(globalUrl, { cache: 'no-store' })
+        const response = await fetch(globalUrl, { cache: 'no-store' })
         
-        if (!globalResponse.ok) {
+        if (!response.ok) {
           throw new Error('Failed to fetch leaderboard')
         }
 
-        const globalData = await globalResponse.json()
-        setScores(globalData.topScores || [])
-
-        // Fetch user scores for selected club
-        if (user?.id) {
-          const userUrl = selectedClub 
-            ? `/api/quiz/results?telegramId=${user.id}&clubId=${selectedClub}`
-            : `/api/quiz/results?telegramId=${user.id}`
-          
-          const userResponse = await fetch(userUrl, { cache: 'no-store' })
-          
-          if (userResponse.ok) {
-            const userData = await userResponse.json()
-            setUserScores(userData.topScores || [])
-          }
-        }
-
+        const data = await response.json()
+        setScores(data.topScores || [])
         setError(null)
       } catch (error) {
         console.error('Error fetching leaderboard:', error)
@@ -101,7 +63,7 @@ export function LeadersList() {
     }
 
     fetchScores()
-  }, [selectedClub, user])
+  }, [selectedClub])
 
   const clubs = [
     { id: 1, name: 'Real Madrid', icon: '/clubs/real-madrid.png', slug: 'real-madrid' },
@@ -147,8 +109,6 @@ export function LeadersList() {
             className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 ${
               selectedClub === club.id
                 ? 'bg-blue-600 text-white'
-                : club.id === userSelectedClub
-                ? 'bg-blue-100 text-blue-700'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
@@ -169,39 +129,6 @@ export function LeadersList() {
       {isLoading && (
         <div className="text-center py-8">
           <p className="text-gray-600">Загрузка результатов...</p>
-        </div>
-      )}
-
-      {/* User's scores section */}
-      {!isLoading && user && userScores.length > 0 && (
-        <div className="bg-blue-50 p-4 rounded-xl">
-          <h3 className="font-medium text-blue-900 mb-3">
-            {selectedClub ? 'Ваши результаты по выбранному клубу' : 'Ваши результаты'}
-          </h3>
-          <div className="space-y-2">
-            {userScores.map((score) => (
-              <motion.div
-                key={score.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-white p-3 rounded-lg shadow-sm"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Image
-                      src={score.club.icon}
-                      alt={score.club.name}
-                      width={20}
-                      height={20}
-                      className="object-contain"
-                    />
-                    <span className="text-gray-600">{score.club.name}</span>
-                  </div>
-                  <span className="font-medium text-blue-600">{score.score} правильных</span>
-                </div>
-              </motion.div>
-            ))}
-          </div>
         </div>
       )}
 

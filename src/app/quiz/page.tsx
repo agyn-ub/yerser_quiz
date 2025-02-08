@@ -1,18 +1,26 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { QuizContainer } from '@/components/quiz/QuizContainer'
 import { Loading } from '@/components/ui/loading'
 import { Question } from '@/lib/types'
 
 export default function QuizPage() {
+  const router = useRouter()
   const [questions, setQuestions] = useState<Question[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        const response = await fetch('/api/quiz/questions')
+        const clubId = localStorage.getItem('selected_club_id')
+        if (!clubId) {
+          router.replace('/select-club')
+          return
+        }
+
+        const response = await fetch(`/api/quiz/questions?clubId=${clubId}`)
         if (!response.ok) throw new Error('Failed to fetch questions')
         const data = await response.json()
         setQuestions(data.questions)
@@ -24,7 +32,7 @@ export default function QuizPage() {
     }
 
     fetchQuestions()
-  }, [])
+  }, [router])
 
   if (isLoading) {
     return <Loading />

@@ -42,12 +42,21 @@ export function QuizContainer({ questions }: { questions: Question[] }) {
 
 	const saveScore = async (finalScore: number) => {
 		try {
+			const telegramId = localStorage.getItem('telegram_id')
+			const clubId = localStorage.getItem('selected_club_id')
+
+			if (!telegramId || !clubId) {
+				throw new Error('Missing user or club information')
+			}
+
 			const response = await fetch('/api/quiz/score', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ 
 					score: finalScore,
 					correctAnswers: finalScore,
+					telegramId: parseInt(telegramId),
+					clubId: parseInt(clubId)
 				}),
 			})
 			

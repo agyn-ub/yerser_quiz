@@ -53,9 +53,9 @@ export function ClubSelector() {
 
       if (data.success) {
         localStorage.setItem('selected_club_id', clubId.toString())
-        // Wait for localStorage to be updated
-        await new Promise(resolve => setTimeout(resolve, 100))
-        window.location.href = '/'
+        // Reload the page instead of using window.location
+        router.refresh()
+        router.push('/')
       } else {
         throw new Error(data.error || 'Failed to select club')
       }

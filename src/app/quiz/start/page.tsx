@@ -10,7 +10,13 @@ export default function QuizStartPage() {
   useEffect(() => {
     const initializeQuiz = async () => {
       try {
-        const response = await fetch('/api/quiz/questions')
+        const clubId = localStorage.getItem('selected_club_id')
+        if (!clubId) {
+          router.replace('/select-club')
+          return
+        }
+
+        const response = await fetch(`/api/quiz/questions?clubId=${clubId}`)
         if (!response.ok) throw new Error('Failed to fetch questions')
         router.push('/quiz')
       } catch (error) {
