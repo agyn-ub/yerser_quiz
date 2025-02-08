@@ -2,12 +2,10 @@ import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { users } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
-import { cookies } from 'next/headers'
 
 export async function POST(request: Request) {
 	try {
 		const userData = await request.json()
-		const cookieStore = cookies()
 		let user
 
 		// Check if user exists first
@@ -38,22 +36,11 @@ export async function POST(request: Request) {
 			user = existingUser
 		}
 
-		const response = NextResponse.json({
+		return NextResponse.json({
 			success: true,
 			user,
 			redirect: user?.selectedClubId ? '/' : '/select-club'
 		})
-
-		// Set cookie on the response object instead
-		response.cookies.set('telegram_id', userData.telegramId, {
-			httpOnly: true,
-			secure: process.env.NODE_ENV === 'production',
-			sameSite: 'lax',
-			path: '/',
-			maxAge: 30 * 24 * 60 * 60
-		})
-
-		return response
 
 	} catch (error) {
 		console.error('Auth error:', error)

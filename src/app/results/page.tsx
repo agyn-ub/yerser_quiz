@@ -1,15 +1,20 @@
 'use client'
 
-import { Suspense } from 'react'
+import { Suspense, useEffect } from 'react'
 import Link from 'next/link'
 import { ResultsList } from '@/components/results/results-list'
 import { ResultsSkeleton } from '@/components/results/results-skeleton'
-import { useTelegram } from '@/hooks/useTelegram'
+import { useRouter } from 'next/navigation'
 
 export default function ResultsPage() {
-  const { user } = useTelegram()
+  const router = useRouter()
 
-  if (!user) return null
+  useEffect(() => {
+    const storedTelegramId = localStorage.getItem('telegram_id')
+    if (!storedTelegramId) {
+      router.replace('/auth')
+    }
+  }, [router])
 
   return (
     <div className="min-h-screen p-4">

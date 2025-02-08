@@ -2,13 +2,10 @@ import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { users } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
-import { cookies } from 'next/headers'
 
 export async function POST(request: Request) {
   try {
-    const { clubId } = await request.json()
-    const cookieStore = cookies()
-    const telegramId = (await cookieStore).get('telegram_id')?.value
+    const { clubId, telegramId } = await request.json()
 
     if (!telegramId) {
       return NextResponse.json(

@@ -25,34 +25,43 @@ const clubs: Club[] = [
 
 export function ClubSelector() {
   const router = useRouter()
-  const { user } = useTelegram()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const handleClubSelect = async (clubId: number) => {
-    if (!user) {
-      router.push('/auth')
-      return
-    }
-    
-    setIsLoading(true)
-    setError(null)
-
     try {
-      const response = await fetch('/api/user/select-club', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ clubId }),
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to select club')
+      setIsLoading(true)
+      const telegramId = localStorage.getItem('telegram_id')
+      
+      if (!telegramId) {
+        router.replace('/auth')
+        return
       }
 
-      router.push('/')
+      const response = await fetch('/api/user/select-club', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          clubId,
+          telegramId
+        }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        localStorage.setItem('selected_club_id', clubId.toString())
+        // Wait for localStorage to be updated
+        await new Promise(resolve => setTimeout(resolve, 100))
+        window.location.href = '/'
+      } else {
+        throw new Error(data.error || 'Failed to select club')
+      }
     } catch (error) {
       console.error('Error selecting club:', error)
-      setError('Не удалось выбрать клуб. Попробуйте снова.')
+      setError('Failed to select club. Please try again.')
     } finally {
       setIsLoading(false)
     }

@@ -18,20 +18,7 @@ export default function Auth() {
       setAuthError(null)
 
       try {
-        // First, check if already authenticated
-        const checkResponse = await fetch('/api/auth/check', {
-          credentials: 'include'
-        })
-
-        if (checkResponse.ok) {
-          const { authenticated } = await checkResponse.json()
-          if (authenticated) {
-            router.replace('/')
-            return
-          }
-        }
-
-        // If not authenticated, proceed with authentication
+        // If not in localStorage, check database and create if needed
         const response = await fetch('/api/auth/telegram', {
           method: 'POST',
           headers: {
@@ -43,20 +30,18 @@ export default function Auth() {
             lastName: user.last_name,
             username: user.username,
           }),
-          credentials: 'include'
         })
 
         if (!response.ok) {
           throw new Error('Authentication failed')
         }
 
-        const data = await response.json()
+        // Store telegram ID in localStorage
+        localStorage.setItem('telegram_id', user.id.toString())
 
-        if (data.success) {
-          router.replace(data.redirect)
-        } else {
-          throw new Error(data.error || 'Authentication failed')
-        }
+        // Redirect to main page
+        router.replace('/')
+
       } catch (error) {
         console.error('Authentication error:', error)
         setAuthError('Failed to authenticate. Please try again.')
@@ -68,7 +53,7 @@ export default function Auth() {
     authenticate()
   }, [user, router, isAuthenticating])
 
-  if (user && isAuthenticating) {
+  if (isAuthenticating) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md w-full">
@@ -102,7 +87,7 @@ export default function Auth() {
           </div>
         ) : (
           <p className="text-gray-600">
-            Пожалуйста, войдите через Telegram...
+            {isAuthenticating ? 'Авторизация...' : 'Пожалуйста, войдите через Telegram...'}
           </p>
         )}
       </div>

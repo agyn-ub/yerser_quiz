@@ -1,19 +1,16 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { userScores, users } from '@/lib/db/schema'
-import { cookies } from 'next/headers'
 import { eq } from 'drizzle-orm'
 
 export async function POST(request: Request) {
   try {
-    const { score } = await request.json()
-    const cookieStore = await cookies()
-    const telegramId = cookieStore.get('telegram_id')?.value
+    const { score, telegramId, clubId } = await request.json()
 
-    if (!telegramId) {
+    if (!telegramId || !clubId) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
+        { error: 'Missing required data' },
+        { status: 400 }
       )
     }
 
@@ -22,17 +19,17 @@ export async function POST(request: Request) {
       where: eq(users.telegramId, telegramId),
     })
 
-    if (!user || !user.selectedClubId) {
+    if (!user) {
       return NextResponse.json(
-        { error: 'User or selected club not found' },
+        { error: 'User not found' },
         { status: 404 }
       )
     }
 
-    // Save score with club info
+    // Save score with club info from localStorage
     await db.insert(userScores).values({
       userId: user.id,
-      clubId: user.selectedClubId,
+      clubId: parseInt(clubId),
       score: score,
       correctAnswers: score,
       completedAt: new Date(),

@@ -1,21 +1,16 @@
 'use client'
 
-import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useTelegram } from '@/hooks/useTelegram'
 import { ClubSelector } from '@/components/clubs/club-selector'
 
 export default function SelectClub() {
   const router = useRouter()
-  const { user } = useTelegram()
 
-  useEffect(() => {
-    if (!user) {
-      router.push('/auth')
-    }
-  }, [user, router])
-
-  if (!user) return null
+  const storedTelegramId = localStorage.getItem('telegram_id')
+  if (!storedTelegramId) {
+    router.replace('/auth')
+    return
+  }
 
   return (
     <div className="min-h-screen p-4 sm:p-6 md:p-8">
