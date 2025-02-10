@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
-import { useTelegram } from '@/hooks/useTelegram'
 
 interface Club {
   id: number
@@ -16,7 +15,7 @@ interface Score {
   id: number
   score: number
   completedAt: string
-  club: Club
+  club: Club | null
   user: {
     firstName: string
     lastName: string | null
@@ -25,7 +24,6 @@ interface Score {
 }
 
 export function LeadersList() {
-  const { user } = useTelegram()
   const [scores, setScores] = useState<Score[]>([])
   const [selectedClub, setSelectedClub] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -144,20 +142,24 @@ export function LeadersList() {
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Image
-                    src={score.club.icon}
-                    alt={score.club.name}
-                    width={24}
-                    height={24}
-                    className="object-contain"
-                  />
+                  {score.club && (
+                    <Image
+                      src={score.club.icon}
+                      alt={score.club.name}
+                      width={24}
+                      height={24}
+                      className="object-contain"
+                    />
+                  )}
                   <div>
                     <p className="font-medium">
                       {score.user.firstName}
                       {score.user.lastName && ` ${score.user.lastName}`}
                       {score.user.username && ` (@${score.user.username})`}
                     </p>
-                    <p className="text-sm text-gray-600">{score.club.name}</p>
+                    {score.club && (
+                      <p className="text-sm text-gray-600">{score.club.name}</p>
+                    )}
                   </div>
                 </div>
                 <span className="font-medium text-blue-600">{score.score} правильных</span>

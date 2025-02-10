@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ClubSelector } from '@/components/clubs/club-selector'
 import { PageTransition } from '@/components/ui/page-transition'
@@ -7,10 +8,19 @@ import { motion } from 'framer-motion'
 
 export default function SelectClub() {
   const router = useRouter()
+  const [isClient, setIsClient] = useState(false)
 
-  const storedTelegramId = localStorage.getItem('telegram_id')
-  if (!storedTelegramId) {
-    router.replace('/auth')
+  useEffect(() => {
+    setIsClient(true)
+    // Check localStorage after component mounts
+    const telegramId = localStorage.getItem('telegram_id')
+    if (!telegramId) {
+      router.replace('/auth')
+    }
+  }, [router])
+
+  // Don't render anything until we're on the client
+  if (!isClient) {
     return null
   }
 

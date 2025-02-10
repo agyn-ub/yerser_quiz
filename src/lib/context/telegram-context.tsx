@@ -28,8 +28,7 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
 			if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
 				const tg = window.Telegram.WebApp
 				tg.ready()
-				tg.expand()
-
+				
 				if (tg.initDataUnsafe?.user) {
 					setUser(tg.initDataUnsafe.user)
 					// Save user to database

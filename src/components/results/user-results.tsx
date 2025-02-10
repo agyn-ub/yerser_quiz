@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
-import { LoadingState } from '@/components/ui/loading-state'
 import { LoadingSkeleton } from '@/components/ui/loading-skeleton'
 
 interface QuizResult {

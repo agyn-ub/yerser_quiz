@@ -57,7 +57,7 @@ export default function Auth() {
     }
 
     authenticate()
-  }, [user, router])
+  }, [user, router, isAuthenticating])
 
   if (isAuthenticating) {
     return (

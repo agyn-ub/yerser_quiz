@@ -5,25 +5,6 @@ import { userScores, users } from '@/lib/db/schema'
 
 export const dynamic = 'force-dynamic'
 
-// Define interfaces for type safety
-interface User {
-  id: number
-  telegramId: string
-  firstName: string | null
-  lastName: string | null
-  username: string | null
-  createdAt: Date | null
-}
-
-interface UserScore {
-  id: number
-  userId: number | null
-  score: number
-  correctAnswers: number
-  completedAt: Date | null
-  user?: User
-}
-
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)

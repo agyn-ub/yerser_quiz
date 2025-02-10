@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import { useTelegram } from '@/hooks/useTelegram'
+import Image from 'next/image'
 
 interface Score {
   id: number
@@ -14,11 +15,12 @@ interface Score {
     id: number
     name: string
     icon: string
-  }
+  } | null
   user: {
     firstName: string
     lastName: string | null
     username: string | null
+    avatar?: string
   }
 }
 
@@ -79,11 +81,14 @@ export function ResultsList() {
         >
           <div className="flex items-center gap-3">
             {score.club && (
-              <img 
-                src={score.club.icon} 
-                alt={score.club.name} 
-                className="w-6 h-6 object-contain"
-              />
+              <div className="relative w-6 h-6">
+                <Image 
+                  src={score.club.icon} 
+                  alt={score.club.name} 
+                  fill
+                  className="object-contain"
+                />
+              </div>
             )}
             <p className="text-lg font-medium text-blue-600">
               {score.score} правильных ответов
