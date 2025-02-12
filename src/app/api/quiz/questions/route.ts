@@ -4,15 +4,6 @@ import { sql } from 'drizzle-orm'
 import { quizQuestions } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
 
-// Helper function to shuffle array
-const shuffleArray = <T>(array: T[]): T[] => {
-  const shuffled = [...array]
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
-  }
-  return shuffled
-}
 
 export async function GET(request: Request) {
   try {
@@ -34,17 +25,12 @@ export async function GET(request: Request) {
     })
 
     // Shuffle options for each question
-    const questions = rawQuestions.map(question => {
-      const allOptions = [question.correctAnswer, ...question.options]
-      const shuffledOptions = shuffleArray(allOptions)
-      const correctIndex = shuffledOptions.indexOf(question.correctAnswer)
-
-      return {
-        ...question,
-        options: shuffledOptions,
-        correctIndex
-      }
-    })
+    const questions = rawQuestions.map(question => ({
+      id: question.id,
+      question: question.question,
+      options: question.options,
+      correctAnswer: question.correctAnswer
+    }))
 
     return NextResponse.json({ questions })
   } catch (error) {

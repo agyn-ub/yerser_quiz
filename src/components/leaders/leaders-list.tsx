@@ -140,29 +140,30 @@ export function LeadersList() {
               animate={{ opacity: 1, y: 0 }}
               className="bg-gray-50 p-4 rounded-xl"
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  {score.club && (
-                    <Image
-                      src={score.club.icon}
-                      alt={score.club.name}
-                      width={24}
-                      height={24}
-                      className="object-contain"
-                    />
-                  )}
-                  <div>
-                    <p className="font-medium">
+              <div className="flex items-center gap-2 min-w-0">
+                {score.club && (
+                  <Image
+                    src={score.club.icon}
+                    alt={score.club.name}
+                    width={24}
+                    height={24}
+                    className="object-contain flex-shrink-0"
+                  />
+                )}
+                <div className="min-w-0 w-full">
+                  <div className="flex flex-col gap-1">
+                    <p className="font-medium truncate">
                       {score.user.firstName}
                       {score.user.lastName && ` ${score.user.lastName}`}
                       {score.user.username && ` (@${score.user.username})`}
                     </p>
-                    {score.club && (
-                      <p className="text-sm text-gray-600">{score.club.name}</p>
-                    )}
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-blue-600 flex-shrink-0">
+                        {score.score} правильных ответов
+                      </span>
+                    </div>
                   </div>
                 </div>
-                <span className="font-medium text-blue-600">{score.score} правильных</span>
               </div>
             </motion.div>
           ))}
