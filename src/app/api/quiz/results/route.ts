@@ -60,6 +60,7 @@ export async function GET(request: Request) {
       topScores: scores.map(score => ({
         id: score.id,
         score: score.score,
+        correctAnswers: score.correctAnswers,
         completedAt: score.completedAt,
         club: score.club,
         user: score.user ? {

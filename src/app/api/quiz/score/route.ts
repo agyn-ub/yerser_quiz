@@ -5,7 +5,7 @@ import { eq } from 'drizzle-orm'
 
 export async function POST(request: Request) {
   try {
-    const { score, telegramId, clubId } = await request.json()
+    const { score, correctAnswers, telegramId, clubId } = await request.json()
 
     if (!telegramId || !clubId) {
       return NextResponse.json(
@@ -26,12 +26,12 @@ export async function POST(request: Request) {
       )
     }
 
-    // Save score with club info from localStorage
+    // Save both score (points) and correctAnswers separately
     await db.insert(userScores).values({
       userId: user.id,
       clubId: parseInt(clubId),
-      score: score,
-      correctAnswers: score,
+      score: score, // Total points based on difficulty
+      correctAnswers: correctAnswers, // Number of correct answers
       completedAt: new Date(),
     })
 

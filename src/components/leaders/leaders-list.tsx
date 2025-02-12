@@ -14,6 +14,7 @@ interface Club {
 interface Score {
   id: number
   score: number
+  correctAnswers: number
   completedAt: string
   club: Club | null
   user: {
@@ -158,9 +159,14 @@ export function LeadersList() {
                       {score.user.username && ` (@${score.user.username})`}
                     </p>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-blue-600 flex-shrink-0">
-                        {score.score} правильных ответов
-                      </span>
+                      <div className="flex flex-col gap-1">
+                        <span className="text-sm font-medium text-blue-600 flex-shrink-0">
+                          {score.score} баллов
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {score.correctAnswers} правильных ответов
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>

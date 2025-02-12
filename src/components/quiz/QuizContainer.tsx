@@ -10,12 +10,15 @@ interface Question {
 	question: string
 	options: string[]
 	correctAnswer: string
+	difficulty: string
+	score: number
 }
 
 export function QuizContainer({ questions }: { questions: Question[] }) {
 	const router = useRouter()
 	const [currentQuestion, setCurrentQuestion] = useState(0)
 	const [score, setScore] = useState(0)
+	const [totalPoints, setTotalPoints] = useState(0)
 	const [showResult, setShowResult] = useState(false)
 	const [saveError, setSaveError] = useState<string | null>(null)
 	const [isSubmitting, setIsSubmitting] = useState(false)
@@ -32,7 +35,10 @@ export function QuizContainer({ questions }: { questions: Question[] }) {
 
 		// Show feedback for 1 second before moving to next question
 		setTimeout(async () => {
-			if (isCorrect) setScore(score + 1)
+			if (isCorrect) {
+				setScore(score + 1)
+				setTotalPoints(totalPoints + questions[currentQuestion].score)
+			}
 
 			if (currentQuestion + 1 < questions.length) {
 				setCurrentQuestion(currentQuestion + 1)
@@ -42,7 +48,8 @@ export function QuizContainer({ questions }: { questions: Question[] }) {
 				setIsLoadingResults(true)
 				setIsSubmitting(true)
 				const finalScore = score + (isCorrect ? 1 : 0)
-				const saved = await saveScore(finalScore)
+				const finalPoints = totalPoints + (isCorrect ? questions[currentQuestion].score : 0)
+				const saved = await saveScore(finalScore, finalPoints)
 				setIsLoadingResults(false)
 				setShowResult(true)
 				if (!saved) {
@@ -53,7 +60,7 @@ export function QuizContainer({ questions }: { questions: Question[] }) {
 		}, 1000)
 	}
 
-	const saveScore = async (finalScore: number) => {
+	const saveScore = async (correctAnswers: number, totalPoints: number) => {
 		try {
 			const telegramId = localStorage.getItem('telegram_id')
 			const clubId = localStorage.getItem('selected_club_id')
@@ -66,8 +73,8 @@ export function QuizContainer({ questions }: { questions: Question[] }) {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ 
-					score: finalScore,
-					correctAnswers: finalScore,
+					score: totalPoints,
+					correctAnswers: correctAnswers,
 					telegramId: parseInt(telegramId),
 					clubId: parseInt(clubId)
 				}),
@@ -92,7 +99,8 @@ export function QuizContainer({ questions }: { questions: Question[] }) {
 	if (showResult) {
 		return (
 			<QuizResult 
-				score={score} 
+				score={score}
+				totalPoints={totalPoints}
 				totalQuestions={questions.length} 
 				onRetry={handleRetry}
 				error={saveError}
@@ -129,9 +137,27 @@ export function QuizContainer({ questions }: { questions: Question[] }) {
 					exit={{ opacity: 0, y: -20 }}
 					className="space-y-4"
 				>
-					<h2 className="text-lg text-gray-600 mb-2">
-						Вопрос {currentQuestion + 1} из {questions.length}
-					</h2>
+					<div className="flex items-center justify-between mb-2">
+						<h2 className="text-lg text-gray-600">
+							Вопрос {currentQuestion + 1} из {questions.length}
+						</h2>
+						<div className="flex items-center gap-3">
+							<span className={`
+								px-3 py-1 rounded-full text-sm font-medium
+								${currentQuestionData.difficulty === 'easy' ? 'bg-green-100 text-green-700' : 
+									currentQuestionData.difficulty === 'medium' ? 'bg-yellow-100 text-yellow-700' : 
+									'bg-red-100 text-red-700'}
+							`}>
+								{currentQuestionData.difficulty === 'easy' ? 'Легкий' :
+								 currentQuestionData.difficulty === 'medium' ? 'Средний' : 
+								 'Сложный'}
+							</span>
+							<span className="text-sm font-medium text-blue-600">
+								
+								 {currentQuestionData.score} баллов
+							</span>
+						</div>
+					</div>
 					<p className="text-2xl font-medium text-gray-800">
 						{currentQuestionData.question}
 					</p>

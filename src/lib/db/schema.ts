@@ -32,6 +32,7 @@ export const quizQuestions = pgTable('quiz_questions', {
 	clubId: integer('club_id').references(() => clubs.id).notNull(),
 	question: text('question').notNull(),
 	correctAnswer: text('correct_answer').notNull(),
+	score: integer('score').notNull(),
 	options: text('options').array().notNull(),
 	difficulty: text('difficulty').notNull(),
 })

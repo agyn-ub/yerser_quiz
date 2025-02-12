@@ -29,8 +29,12 @@ export async function GET(request: Request) {
       id: question.id,
       question: question.question,
       options: question.options,
-      correctAnswer: question.correctAnswer
+      correctAnswer: question.correctAnswer,
+      difficulty: question.difficulty,
+      score: question.score
     }))
+
+    console.log('Questions:', questions)
 
     return NextResponse.json({ questions })
   } catch (error) {

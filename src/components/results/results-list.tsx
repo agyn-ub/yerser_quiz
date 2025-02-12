@@ -10,6 +10,7 @@ import Image from 'next/image'
 interface Score {
   id: number
   score: number
+  correctAnswers: number
   completedAt: string
   club: {
     id: number
@@ -79,7 +80,7 @@ export function ResultsList() {
           animate={{ opacity: 1, y: 0 }}
           className="bg-gray-50 p-4 rounded-xl"
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 min-w-0">
             {score.club && (
               <div className="relative w-6 h-6">
                 <Image 
@@ -90,9 +91,25 @@ export function ResultsList() {
                 />
               </div>
             )}
-            <p className="text-lg font-medium text-blue-600">
-              {score.score} правильных ответов
-            </p>
+            <div className="min-w-0 w-full">
+              <div className="flex flex-col gap-1">
+                <p className="font-medium truncate">
+                  {score.user.firstName}
+                  {score.user.lastName && ` ${score.user.lastName}`}
+                  {score.user.username && ` (@${score.user.username})`}
+                </p>
+                <div className="flex items-center justify-between">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-sm font-medium text-blue-600 flex-shrink-0">
+                      {score.score} баллов
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {score.correctAnswers} правильных ответов
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
           <p className="text-sm text-gray-600">
             {format(new Date(score.completedAt), "d MMMM yyyy 'в' HH:mm", { locale: ru })}

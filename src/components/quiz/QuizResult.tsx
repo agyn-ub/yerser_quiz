@@ -5,12 +5,13 @@ import Link from 'next/link'
 
 interface QuizResultProps {
   score: number
+   totalPoints: number
   totalQuestions: number
   onRetry: () => void
   error?: string | null
 }
 
-export function QuizResult({ score, totalQuestions, onRetry, error }: QuizResultProps) {
+export function QuizResult({ score, totalPoints, totalQuestions, onRetry, error }: QuizResultProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -21,12 +22,17 @@ export function QuizResult({ score, totalQuestions, onRetry, error }: QuizResult
         Квиз завершен!
       </h2>
       <div className="mb-8">
-        <p className="text-2xl font-semibold text-blue-600">
-          Ваш результат: {score} из {totalQuestions}
-        </p>
-        <p className="text-gray-600 mt-2">
+        <div className="space-y-2">
+          <p className="text-2xl font-semibold text-blue-600">
+            Правильных ответов: {score} из {totalQuestions}
+          </p>
+          <p className="text-xl font-medium text-gray-700">
+            Набрано баллов: {totalPoints}
+          </p>
+        </div>
+        <p className="text-gray-600 mt-4">
           {score === totalQuestions 
-            ? 'Отлично! Вы настоящий фанат Real Madrid!' 
+            ? 'Отлично! Вы настоящий фанат клуба!' 
             : 'Хороший результат! Продолжайте изучать историю клуба!'}
         </p>
         {error && (
